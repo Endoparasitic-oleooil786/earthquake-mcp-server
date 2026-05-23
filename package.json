@@ -1,7 +1,7 @@
 {
-  "name": "earthquake-mcp-server",
+  "name": "@cyanheads/earthquake-mcp-server",
   "version": "0.1.0",
-  "description": "",
+  "description": "Global seismic data via USGS and EMSC: real-time feeds, FDSN event queries, and earthquake counts.",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -37,10 +37,20 @@
     "start:stdio": "MCP_TRANSPORT_TYPE=stdio node dist/index.js",
     "start:http": "MCP_TRANSPORT_TYPE=http node dist/index.js"
   },
-  "keywords": ["mcp", "mcp-server", "model-context-protocol"],
+  "keywords": [
+    "mcp",
+    "mcp-server",
+    "model-context-protocol",
+    "earthquake",
+    "seismic",
+    "usgs",
+    "emsc",
+    "geoscience",
+    "natural-disaster"
+  ],
   "repository": {
     "type": "git",
-    "url": ""
+    "url": "https://github.com/cyanheads/earthquake-mcp-server"
   },
   "license": "Apache-2.0",
   "engines": {
