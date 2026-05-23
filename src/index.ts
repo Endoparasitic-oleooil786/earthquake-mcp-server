@@ -5,17 +5,23 @@
  */
 
 import { createApp } from '@cyanheads/mcp-ts-core';
-import { echoTool } from './mcp-server/tools/definitions/echo.tool.js';
-import { echoAppTool } from './mcp-server/tools/definitions/echo-app.app-tool.js';
-import { echoResource } from './mcp-server/resources/definitions/echo.resource.js';
-import { echoAppUiResource } from './mcp-server/resources/definitions/echo-app-ui.app-resource.js';
-import { echoPrompt } from './mcp-server/prompts/definitions/echo.prompt.js';
+import { getServerConfig } from './config/server-config.js';
+import { earthquakeEventResource } from './mcp-server/resources/definitions/earthquake-event.resource.js';
+import { earthquakeFeedResource } from './mcp-server/resources/definitions/earthquake-feed.resource.js';
+import { earthquakeCount } from './mcp-server/tools/definitions/earthquake-count.tool.js';
+import { earthquakeGetEvent } from './mcp-server/tools/definitions/earthquake-get-event.tool.js';
+import { earthquakeGetFeed } from './mcp-server/tools/definitions/earthquake-get-feed.tool.js';
+import { earthquakeSearch } from './mcp-server/tools/definitions/earthquake-search.tool.js';
+import { initEmscService } from './services/emsc/emsc-service.js';
+import { initUsgsService } from './services/usgs/usgs-service.js';
 
 await createApp({
-  tools: [echoTool, echoAppTool],
-  resources: [echoResource, echoAppUiResource],
-  prompts: [echoPrompt],
-  // instructions: 'Server-level orientation forwarded to the model on every initialize.\n' +
-  //   '- Use shortcut `X` for the most common case\n' +
-  //   '- Tools require auth via the `inventory:read` scope',
+  tools: [earthquakeGetFeed, earthquakeSearch, earthquakeGetEvent, earthquakeCount],
+  resources: [earthquakeFeedResource, earthquakeEventResource],
+  prompts: [],
+  setup(core) {
+    const config = getServerConfig();
+    initUsgsService(core.config, core.storage, config.usgsBaseUrl, config.requestTimeoutMs);
+    initEmscService(core.config, core.storage, config.emscBaseUrl, config.requestTimeoutMs);
+  },
 });

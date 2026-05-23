@@ -1,9 +1,9 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
-  "name": "earthquake-mcp-server",
-  "description": "",
+  "name": "cyanheads/earthquake-mcp-server",
+  "description": "Global seismic data via USGS and EMSC: real-time feeds, FDSN event queries, and earthquake counts.",
   "repository": {
-    "url": "",
+    "url": "https://github.com/cyanheads/earthquake-mcp-server",
     "source": "github"
   },
   "version": "0.1.0",
