@@ -89,7 +89,7 @@ export const earthquakeFeedResource = resource('earthquake://feed/{magnitude_tie
       VALID_WINDOWS.map((window) => ({
         uri: `earthquake://feed/${tier}/${window}`,
         name: `USGS ${tier} earthquakes (${window})`,
-        description: `USGS real-time feed: M${tier}+ events in the last ${window}.`,
+        description: `USGS real-time feed: ${/^[0-9]/.test(tier) ? `M${tier}+` : tier} events in the last ${window}.`,
         mimeType: 'application/json',
       })),
     ),
