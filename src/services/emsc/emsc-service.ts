@@ -77,7 +77,7 @@ export class EmscService {
   }
 
   /** Query EMSC FDSN event API. */
-  async searchEvents(
+  searchEvents(
     params: EarthquakeQueryParams,
     ctx: Context,
   ): Promise<{
@@ -131,7 +131,7 @@ export class EmscService {
   }
 
   /** Count events matching a query. */
-  async countEvents(
+  countEvents(
     params: EarthquakeQueryParams,
     ctx: Context,
   ): Promise<{

@@ -16,7 +16,7 @@ export const earthquakeGetEvent = tool('earthquake_get_event', {
     'PAGER alert level, tsunami flag, and magnitude type. ' +
     'Event IDs appear in the "id" field of earthquake_get_feed and earthquake_search results. ' +
     'This tool is USGS-only — EMSC events have no per-event detail endpoint.',
-  annotations: { readOnlyHint: true, openWorldHint: true },
+  annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: true },
 
   input: z.object({
     event_id: z
@@ -45,36 +45,13 @@ export const earthquakeGetEvent = tool('earthquake_get_event', {
   async handler(input, ctx) {
     ctx.log.info('Fetching earthquake event detail', { event_id: input.event_id });
 
-    const raw = await getUsgsService().getEvent(input.event_id, ctx);
+    const event = await getUsgsService().getEvent(input.event_id, ctx);
 
     ctx.log.info('Event fetched', {
       event_id: input.event_id,
-      magnitude: raw.magnitude,
-      place: raw.place,
+      magnitude: event.magnitude,
+      place: event.place,
     });
-
-    // Normalize optional fields to satisfy exactOptionalPropertyTypes
-    const event = {
-      id: raw.id,
-      title: raw.title,
-      magnitude: raw.magnitude,
-      magnitude_type: raw.magnitude_type,
-      time: raw.time,
-      updated: raw.updated,
-      place: raw.place,
-      latitude: raw.latitude,
-      longitude: raw.longitude,
-      depth_km: raw.depth_km,
-      felt: raw.felt,
-      cdi: raw.cdi,
-      mmi: raw.mmi,
-      alert: raw.alert,
-      tsunami: raw.tsunami,
-      significance: raw.significance,
-      status: raw.status,
-      ...(raw.event_url != null ? { event_url: raw.event_url } : {}),
-      ...(raw.detail_url != null ? { detail_url: raw.detail_url } : {}),
-    };
 
     return { event };
   },

@@ -20,7 +20,7 @@ export const earthquakeSearch = tool('earthquake_search', {
     'USGS-specific filters (alert_level, min_felt, min_significance) are ignored when source=emsc. ' +
     'Use earthquake_count first to gauge result size before requesting large result sets. ' +
     'Results are capped at 20,000 events per query.',
-  annotations: { readOnlyHint: true, openWorldHint: true },
+  annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: true },
 
   input: z.object({
     start_time: z

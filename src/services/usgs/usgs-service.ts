@@ -80,7 +80,7 @@ export class UsgsService {
   }
 
   /** Fetch a pre-computed USGS real-time feed. */
-  async getFeed(
+  getFeed(
     magnitudeTier: 'all' | '1.0' | '2.5' | '4.5' | 'significant',
     timeWindow: 'hour' | 'day' | 'week' | 'month',
     ctx: Context,
@@ -138,7 +138,7 @@ export class UsgsService {
   }
 
   /** Query USGS FDSN event API. */
-  async searchEvents(
+  searchEvents(
     params: EarthquakeQueryParams,
     ctx: Context,
   ): Promise<{
@@ -211,7 +211,7 @@ export class UsgsService {
   }
 
   /** Fetch a single event by USGS event ID. */
-  async getEvent(eventId: string, ctx: Context): Promise<EarthquakeEvent> {
+  getEvent(eventId: string, ctx: Context): Promise<EarthquakeEvent> {
     const url = `${this.baseUrl}/fdsnws/event/1/query?eventid=${encodeURIComponent(eventId)}&format=geojson`;
     const reqCtx = requestContextService.createRequestContext({
       operation: 'UsgsService.getEvent',
@@ -281,7 +281,7 @@ export class UsgsService {
   }
 
   /** Count events matching a query. */
-  async countEvents(
+  countEvents(
     params: EarthquakeQueryParams,
     ctx: Context,
   ): Promise<{

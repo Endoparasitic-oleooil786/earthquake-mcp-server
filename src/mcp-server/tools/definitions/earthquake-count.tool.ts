@@ -20,7 +20,7 @@ export const earthquakeCount = tool('earthquake_count', {
     'USGS returns the max_allowed cap (20,000); EMSC count endpoint does not return this field ' +
     '(max_allowed will be null). ' +
     'USGS-specific filters (alert_level, min_felt, min_significance) are ignored when source=emsc.',
-  annotations: { readOnlyHint: true, openWorldHint: true },
+  annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: true },
 
   input: z.object({
     start_time: z
@@ -65,23 +65,39 @@ export const earthquakeCount = tool('earthquake_count', {
         'Search radius in kilometers from the lat/lon point. ' +
           'Converted to degrees for EMSC (1° ≈ 111.2 km).',
       ),
-    min_depth_km: z.number().optional().describe('Minimum depth in kilometers.'),
+    min_depth_km: z
+      .number()
+      .optional()
+      .describe(
+        'Minimum depth in kilometers. ' +
+          'Shallow quakes (0–70 km) typically cause more surface damage than deep quakes (>300 km).',
+      ),
     max_depth_km: z.number().optional().describe('Maximum depth in kilometers.'),
     alert_level: z
       .enum(['green', 'yellow', 'orange', 'red'])
       .optional()
-      .describe('Minimum PAGER alert level. Only available from USGS.'),
+      .describe(
+        'Minimum PAGER alert level. PAGER estimates economic loss and casualties. ' +
+          '"green" = minimal impact; "red" = extreme. Only available from USGS.',
+      ),
     min_felt: z
       .number()
       .int()
       .min(1)
       .optional()
-      .describe('Minimum number of DYFI reports. Only available from USGS.'),
+      .describe(
+        'Minimum number of DYFI (Did You Feel It?) reports. ' +
+          'Use to count events with confirmed public impact. Only available from USGS.',
+      ),
     min_significance: z
       .number()
       .int()
       .optional()
-      .describe('Minimum USGS significance score (0–2000+). Only available from USGS.'),
+      .describe(
+        'Minimum USGS significance score (0–2000+). ' +
+          'Combines magnitude, felt reports, and PAGER estimates. ' +
+          'Significant events typically score 600+. Only available from USGS.',
+      ),
     source: z
       .enum(['usgs', 'emsc'])
       .default('usgs')

@@ -18,7 +18,7 @@ export const earthquakeGetFeed = tool('earthquake_get_feed', {
     'felt reports, and PAGER impact estimates. ' +
     '"hour" returns 0–10 events typically; "month" can exceed 10,000 for the "all" tier. ' +
     'For historical or filtered queries, use earthquake_search instead.',
-  annotations: { readOnlyHint: true, openWorldHint: true },
+  annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: true },
 
   input: z.object({
     magnitude_tier: z
