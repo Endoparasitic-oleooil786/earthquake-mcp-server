@@ -131,7 +131,14 @@ export const earthquakeSearch = tool('earthquake_search', {
       .optional()
       .describe(
         'Total events matching the query before the limit was applied. ' +
-          'Absent when all results fit in the response.',
+          'Absent when the upstream API does not report total count.',
+      ),
+    truncated: z
+      .boolean()
+      .optional()
+      .describe(
+        'True when results were capped by the limit parameter and more events likely exist. ' +
+          'Use earthquake_count to get the total match count.',
       ),
     source: z.enum(['usgs', 'emsc']).describe('Data source used.'),
     events: z
@@ -214,9 +221,12 @@ export const earthquakeSearch = tool('earthquake_search', {
 
     ctx.log.info('Search completed', { source: input.source, count: result.count });
 
+    const truncated = result.count === limit && result.count > 0;
+
     return {
       count: result.count,
       ...(result.totalCount != null ? { total_count: result.totalCount } : {}),
+      ...(truncated ? { truncated: true } : {}),
       source: input.source,
       events: result.events,
     };
@@ -238,6 +248,13 @@ export const earthquakeSearch = tool('earthquake_search', {
         lines.push(...formatEvent(event));
         lines.push('');
       }
+    }
+
+    if (result.truncated) {
+      lines.push(
+        '_Results truncated at the requested limit — additional events may exist. ' +
+          'Use `earthquake_count` to get the total match count._',
+      );
     }
 
     return [{ type: 'text', text: lines.join('\n') }];
