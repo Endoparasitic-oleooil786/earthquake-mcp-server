@@ -1,6 +1,6 @@
 {
   "name": "@cyanheads/earthquake-mcp-server",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Global seismic data via USGS and EMSC: real-time feeds, FDSN event queries, and earthquake counts.",
   "type": "module",
   "main": "dist/index.js",
