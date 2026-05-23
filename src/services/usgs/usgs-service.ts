@@ -257,17 +257,14 @@ export class UsgsService {
           throw serviceUnavailable('USGS returned HTML instead of GeoJSON.', { eventId });
         }
 
-        const data = JSON.parse(text) as UsgsFeatureCollection;
-        if (!data.features || data.features.length === 0) {
+        const raw = JSON.parse(text) as UsgsFeature | UsgsFeatureCollection;
+        // USGS returns a bare Feature for eventid lookups, not a FeatureCollection
+        const feature = raw.type === 'Feature' ? raw : (raw as UsgsFeatureCollection).features?.[0];
+        if (!feature) {
           throw notFound(
             `No earthquake event found for ID "${eventId}". Verify the ID from a feed or search result.`,
             { eventId },
           );
-        }
-
-        const feature = data.features[0];
-        if (!feature) {
-          throw notFound(`No event data returned for ID "${eventId}".`, { eventId });
         }
         return normalizeUsgsFeature(feature);
       },
