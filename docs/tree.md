@@ -1,10 +1,9 @@
 # earthquake-mcp-server - Directory Structure
 
-Generated on: 2026-05-24 02:30:31
+Generated on: 2026-05-24 04:56:00
 
 ```text
 earthquake-mcp-server/
-├── .claude/
 ├── .github/
 │   └── ISSUE_TEMPLATE/
 │       ├── bug_report.yml
