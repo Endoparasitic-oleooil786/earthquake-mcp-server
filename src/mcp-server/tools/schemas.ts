@@ -20,8 +20,9 @@ export const EarthquakeEventSchema = z.object({
   longitude: z.number().describe('Epicenter longitude in decimal degrees.'),
   depth_km: z
     .number()
+    .nullable()
     .describe(
-      'Hypocenter depth in kilometers. Shallow (<70 km), intermediate (70–300 km), or deep (>300 km).',
+      'Hypocenter depth in kilometers. Shallow (<70 km), intermediate (70–300 km), or deep (>300 km). Null for historical events where depth was not measured.',
     ),
   felt: z
     .number()
@@ -70,7 +71,7 @@ export type EarthquakeEventOutput = {
   place: string;
   latitude: number;
   longitude: number;
-  depth_km: number;
+  depth_km: number | null;
   felt: number | null;
   cdi: number | null;
   mmi: number | null;
@@ -88,7 +89,7 @@ export function formatEvent(event: EarthquakeEventOutput): string[] {
   const lines: string[] = [];
   lines.push(`## ${event.title}`);
   lines.push(
-    `**ID:** ${event.id} | **Magnitude:** ${event.magnitude} (${event.magnitude_type}) | **Depth:** ${event.depth_km} km`,
+    `**ID:** ${event.id} | **Magnitude:** ${event.magnitude} (${event.magnitude_type}) | **Depth:** ${event.depth_km !== null ? `${event.depth_km} km` : 'unknown'}`,
   );
   lines.push(`**Place:** ${event.place}`);
   lines.push(

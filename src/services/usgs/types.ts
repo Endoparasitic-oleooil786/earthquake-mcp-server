@@ -7,7 +7,7 @@
 export interface EarthquakeEvent {
   alert: 'green' | 'yellow' | 'orange' | 'red' | null;
   cdi: number | null;
-  depth_km: number;
+  depth_km: number | null;
   detail_url?: string;
   event_url?: string;
   felt: number | null;
@@ -61,7 +61,7 @@ export interface UsgsFeatureProperties {
 export interface UsgsFeature {
   geometry: {
     type: 'Point';
-    coordinates: [number, number, number]; // [lon, lat, depth_km]
+    coordinates: [number, number, number | null]; // [lon, lat, depth_km] — depth is null for historical events
   };
   id: string;
   properties: UsgsFeatureProperties;
@@ -108,7 +108,7 @@ export interface EmscEventProperties {
 export interface EmscFeature {
   geometry: {
     type: 'Point';
-    coordinates: [number, number, number];
+    coordinates: [number, number, number | null];
   };
   id?: string;
   properties: EmscEventProperties;

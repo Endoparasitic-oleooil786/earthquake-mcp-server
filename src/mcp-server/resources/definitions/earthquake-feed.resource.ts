@@ -38,7 +38,12 @@ export const earthquakeFeedResource = resource('earthquake://feed/{magnitude_tie
             place: z.string().describe('Nearest named location.'),
             latitude: z.number().describe('Epicenter latitude in decimal degrees.'),
             longitude: z.number().describe('Epicenter longitude in decimal degrees.'),
-            depth_km: z.number().describe('Hypocenter depth in kilometers.'),
+            depth_km: z
+              .number()
+              .nullable()
+              .describe(
+                'Hypocenter depth in kilometers. Null for historical events where depth was not measured.',
+              ),
           })
           .describe('A single earthquake event.'),
       )
