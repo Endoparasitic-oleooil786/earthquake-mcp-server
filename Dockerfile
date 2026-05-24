@@ -39,7 +39,7 @@ ENV NODE_ENV=production
 
 # OCI image metadata (https://github.com/opencontainers/image-spec/blob/main/annotations.md)
 LABEL org.opencontainers.image.title="@cyanheads/earthquake-mcp-server"
-LABEL org.opencontainers.image.description="Global seismic data via USGS and EMSC: real-time feeds, FDSN event queries, and earthquake counts."
+LABEL org.opencontainers.image.description="Search USGS and EMSC seismic data — real-time feeds, event queries, and earthquake counts via MCP. STDIO or Streamable HTTP."
 LABEL org.opencontainers.image.licenses="Apache-2.0"
 LABEL org.opencontainers.image.source="https://github.com/cyanheads/earthquake-mcp-server"
 

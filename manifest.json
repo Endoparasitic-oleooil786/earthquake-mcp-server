@@ -1,9 +1,17 @@
 {
   "manifest_version": "0.3",
   "name": "earthquake-mcp-server",
-  "version": "0.1.4",
-  "description": "Search USGS and EMSC seismic data — real-time feeds, event queries, and earthquake counts.",
-  "author": { "name": "cyanheads" },
+  "version": "0.1.5",
+  "description": "Search USGS and EMSC seismic data \u2014 real-time feeds, event queries, and earthquake counts via MCP. STDIO or Streamable HTTP.",
+  "author": {
+    "name": "cyanheads"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cyanheads/earthquake-mcp-server"
+  },
+  "homepage": "https://github.com/cyanheads/earthquake-mcp-server#readme",
+  "license": "Apache-2.0",
   "server": {
     "type": "node",
     "entry_point": "dist/index.js",
@@ -18,7 +26,9 @@
     }
   },
   "compatibility": {
-    "runtimes": { "node": ">=24.0.0" }
+    "runtimes": {
+      "node": ">=24.0.0"
+    }
   },
   "tools_generated": true,
   "prompts_generated": true,
