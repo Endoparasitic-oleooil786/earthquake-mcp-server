@@ -1,19 +1,19 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.cyanheads/earthquake-mcp-server",
-  "description": "Global seismic data via USGS and EMSC: real-time feeds, FDSN event queries, and earthquake counts.",
+  "description": "Search USGS and EMSC seismic data — real-time feeds, event queries, and earthquake counts.",
   "repository": {
     "url": "https://github.com/cyanheads/earthquake-mcp-server",
     "source": "github"
   },
-  "version": "0.1.3",
+  "version": "0.1.4",
   "packages": [
     {
       "registryType": "npm",
       "registryBaseUrl": "https://registry.npmjs.org",
       "identifier": "@cyanheads/earthquake-mcp-server",
       "runtimeHint": "node",
-      "version": "0.1.3",
+      "version": "0.1.4",
       "packageArguments": [
         {
           "type": "positional",
@@ -42,7 +42,7 @@
       "registryBaseUrl": "https://registry.npmjs.org",
       "identifier": "@cyanheads/earthquake-mcp-server",
       "runtimeHint": "node",
-      "version": "0.1.3",
+      "version": "0.1.4",
       "packageArguments": [
         {
           "type": "positional",

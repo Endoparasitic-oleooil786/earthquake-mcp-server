@@ -1,8 +1,8 @@
 {
   "name": "@cyanheads/earthquake-mcp-server",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "mcpName": "io.github.cyanheads/earthquake-mcp-server",
-  "description": "Global seismic data via USGS and EMSC: real-time feeds, FDSN event queries, and earthquake counts.",
+  "description": "Search USGS and EMSC seismic data — real-time feeds, event queries, and earthquake counts.",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -36,7 +36,8 @@
     "test": "vitest run",
     "start": "node dist/index.js",
     "start:stdio": "MCP_TRANSPORT_TYPE=stdio node dist/index.js",
-    "start:http": "MCP_TRANSPORT_TYPE=http node dist/index.js"
+    "start:http": "MCP_TRANSPORT_TYPE=http node dist/index.js",
+    "publish-mcp": "mcp-publisher login github -token \"$(security find-generic-password -a \"$USER\" -s mcp-publisher-github-pat -w)\" && mcp-publisher publish"
   },
   "keywords": [
     "mcp",

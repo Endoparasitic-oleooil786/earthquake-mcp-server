@@ -1,8 +1,8 @@
 {
   "manifest_version": "0.3",
   "name": "earthquake-mcp-server",
-  "version": "0.1.3",
-  "description": "Global seismic data via USGS and EMSC: real-time feeds, FDSN event queries, and earthquake counts.",
+  "version": "0.1.4",
+  "description": "Search USGS and EMSC seismic data — real-time feeds, event queries, and earthquake counts.",
   "author": { "name": "cyanheads" },
   "server": {
     "type": "node",
