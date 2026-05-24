@@ -230,27 +230,8 @@ export class UsgsService {
           headers: { Accept: 'application/json' },
         });
 
-        if (response.status === 404) {
-          throw notFound(
-            `No earthquake event found for ID "${eventId}". Verify the ID from a feed or search result.`,
-            { eventId },
-          );
-        }
-
-        if (!response.ok) {
-          // USGS sometimes returns 400 with "Error 404" body for unknown IDs
-          const body = await response.text();
-          if (/Error 404/i.test(body)) {
-            throw notFound(
-              `No earthquake event found for ID "${eventId}". Verify the ID from a feed or search result.`,
-              { eventId },
-            );
-          }
-          throw serviceUnavailable(`USGS returned HTTP ${response.status} for event lookup.`, {
-            eventId,
-            status: response.status,
-          });
-        }
+        // fetchWithTimeout throws McpError(NotFound) for 404 before we reach here.
+        // Non-404 non-2xx responses are also thrown by fetchWithTimeout.
 
         const text = await response.text();
         if (/^\s*<(!DOCTYPE\s+html|html[\s>])/i.test(text)) {

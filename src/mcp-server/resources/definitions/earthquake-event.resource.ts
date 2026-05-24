@@ -4,7 +4,9 @@
  */
 
 import { resource, z } from '@cyanheads/mcp-ts-core';
+import { JsonRpcErrorCode, McpError, notFound } from '@cyanheads/mcp-ts-core/errors';
 import { EarthquakeEventSchema } from '@/mcp-server/tools/schemas.js';
+import type { EarthquakeEvent } from '@/services/usgs/types.js';
 import { getUsgsService } from '@/services/usgs/usgs-service.js';
 
 export const earthquakeEventResource = resource('earthquake://event/{event_id}', {
@@ -26,7 +28,19 @@ export const earthquakeEventResource = resource('earthquake://event/{event_id}',
 
   async handler(params, ctx) {
     ctx.log.debug('Fetching event resource', { event_id: params.event_id });
-    const event = await getUsgsService().getEvent(params.event_id, ctx);
+    let event: EarthquakeEvent;
+    try {
+      event = await getUsgsService().getEvent(params.event_id, ctx);
+    } catch (err) {
+      if (err instanceof McpError && err.code === JsonRpcErrorCode.NotFound) {
+        throw notFound(
+          `No earthquake event found for ID "${params.event_id}". Verify the ID from a feed or search result.`,
+          { event_id: params.event_id },
+          { cause: err },
+        );
+      }
+      throw err;
+    }
     return { event };
   },
 });
