@@ -17,8 +17,9 @@ RUN bun install --frozen-lockfile
 # Copy the rest of the source code
 COPY . .
 
-# Build the application
-RUN bun run build
+# Build the application. Use bun directly rather than through the build script wrapper
+# to avoid tsx (Node CJS) failing under Bun's Linux runtime when bunfig.toml is present.
+RUN bun scripts/build.ts
 
 
 # ==============================================================================
