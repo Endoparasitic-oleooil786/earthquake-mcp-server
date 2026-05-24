@@ -1,6 +1,6 @@
 # earthquake-mcp-server - Directory Structure
 
-Generated on: 2026-05-23 18:10:50
+Generated on: 2026-05-24 02:30:31
 
 ```text
 earthquake-mcp-server/
@@ -142,6 +142,7 @@ earthquake-mcp-server/
 ├── .mcpbignore
 ├── biome.json
 ├── bun.lock
+├── bunfig.toml
 ├── CHANGELOG.md
 ├── CLAUDE.md
 ├── devcheck.config.json

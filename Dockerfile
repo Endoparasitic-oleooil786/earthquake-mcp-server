@@ -37,9 +37,10 @@ WORKDIR /usr/src/app
 ENV NODE_ENV=production
 
 # OCI image metadata (https://github.com/opencontainers/image-spec/blob/main/annotations.md)
-LABEL org.opencontainers.image.title="earthquake-mcp-server"
-LABEL org.opencontainers.image.description=""
+LABEL org.opencontainers.image.title="@cyanheads/earthquake-mcp-server"
+LABEL org.opencontainers.image.description="Global seismic data via USGS and EMSC: real-time feeds, FDSN event queries, and earthquake counts."
 LABEL org.opencontainers.image.licenses="Apache-2.0"
+LABEL org.opencontainers.image.source="https://github.com/cyanheads/earthquake-mcp-server"
 
 # Copy dependency manifests
 COPY package.json bun.lock ./
