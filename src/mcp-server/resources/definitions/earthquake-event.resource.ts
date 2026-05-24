@@ -13,8 +13,8 @@ export const earthquakeEventResource = resource('earthquake://event/{event_id}',
   name: 'earthquake-event',
   title: 'USGS Earthquake Event',
   description:
-    'Full earthquake event detail by USGS event ID as injectable context. ' +
-    'Returns the complete property set including felt reports, ShakeMap intensity, PAGER alert, and products metadata. ' +
+    'Earthquake event detail by USGS event ID as injectable context. ' +
+    'Returns felt reports, ShakeMap intensity, PAGER alert, tsunami flag, and magnitude type. ' +
     'Use event IDs from earthquake_get_feed or earthquake_search results.',
   mimeType: 'application/json',
 

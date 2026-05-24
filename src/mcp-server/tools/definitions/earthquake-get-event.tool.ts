@@ -12,8 +12,8 @@ import { getUsgsService } from '@/services/usgs/usgs-service.js';
 export const earthquakeGetEvent = tool('earthquake_get_event', {
   title: 'Get Earthquake Event Detail',
   description:
-    'Fetch complete detail for a specific earthquake by USGS event ID. ' +
-    'Returns the full property set including felt reports count (DYFI), ShakeMap maximum intensity (MMI), ' +
+    'Fetch detail for a specific earthquake by USGS event ID. ' +
+    'Returns felt reports count (DYFI), ShakeMap maximum intensity (MMI), ' +
     'PAGER alert level, tsunami flag, and magnitude type. ' +
     'Event IDs appear in the "id" field of earthquake_get_feed and earthquake_search results. ' +
     'This tool is USGS-only — EMSC events have no per-event detail endpoint.',
