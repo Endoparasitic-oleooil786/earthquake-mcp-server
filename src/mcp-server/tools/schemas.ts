@@ -61,28 +61,8 @@ export const EarthquakeEventSchema = z.object({
     .describe('URL to fetch the full GeoJSON detail record. Present in USGS list responses.'),
 });
 
-export type EarthquakeEventOutput = {
-  id: string;
-  title: string;
-  magnitude: number;
-  magnitude_type: string;
-  time: string;
-  updated: string;
-  place: string;
-  latitude: number;
-  longitude: number;
-  depth_km: number | null;
-  felt: number | null;
-  cdi: number | null;
-  mmi: number | null;
-  alert: 'green' | 'yellow' | 'orange' | 'red' | null;
-  tsunami: number;
-  significance: number | null;
-  status: 'automatic' | 'reviewed' | 'deleted';
-  // Accepts both exactOptional (?: string) and legacy (?: string | undefined) shapes
-  event_url?: string | undefined;
-  detail_url?: string | undefined;
-};
+/** Inferred from EarthquakeEventSchema — the output type for a normalized earthquake event. */
+export type EarthquakeEventOutput = z.infer<typeof EarthquakeEventSchema>;
 
 /** Format a single earthquake event as markdown lines. Renders all schema fields for format-parity. */
 export function formatEvent(event: EarthquakeEventOutput): string[] {

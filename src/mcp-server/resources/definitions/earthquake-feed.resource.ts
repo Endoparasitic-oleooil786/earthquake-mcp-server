@@ -10,6 +10,16 @@ import { getUsgsService } from '@/services/usgs/usgs-service.js';
 const VALID_TIERS = ['all', '1.0', '2.5', '4.5', 'significant'] as const;
 const VALID_WINDOWS = ['hour', 'day', 'week', 'month'] as const;
 
+type MagnitudeTier = (typeof VALID_TIERS)[number];
+type TimeWindow = (typeof VALID_WINDOWS)[number];
+
+function isTier(s: string): s is MagnitudeTier {
+  return (VALID_TIERS as readonly string[]).includes(s);
+}
+function isWindow(s: string): s is TimeWindow {
+  return (VALID_WINDOWS as readonly string[]).includes(s);
+}
+
 export const earthquakeFeedResource = resource('earthquake://feed/{magnitude_tier}/{time_window}', {
   name: 'earthquake-feed',
   title: 'USGS Earthquake Feed',
@@ -52,21 +62,21 @@ export const earthquakeFeedResource = resource('earthquake://feed/{magnitude_tie
   }),
 
   async handler(params, ctx) {
-    if (!VALID_TIERS.includes(params.magnitude_tier as (typeof VALID_TIERS)[number])) {
+    if (!isTier(params.magnitude_tier)) {
       throw notFound(
         `Unknown magnitude tier "${params.magnitude_tier}". Valid tiers: ${VALID_TIERS.join(', ')}.`,
         { magnitude_tier: params.magnitude_tier },
       );
     }
-    if (!VALID_WINDOWS.includes(params.time_window as (typeof VALID_WINDOWS)[number])) {
+    if (!isWindow(params.time_window)) {
       throw notFound(
         `Unknown time window "${params.time_window}". Valid windows: ${VALID_WINDOWS.join(', ')}.`,
         { time_window: params.time_window },
       );
     }
 
-    const tier = params.magnitude_tier as (typeof VALID_TIERS)[number];
-    const window = params.time_window as (typeof VALID_WINDOWS)[number];
+    const tier = params.magnitude_tier;
+    const window = params.time_window;
 
     ctx.log.debug('Fetching feed resource', { tier, window });
 

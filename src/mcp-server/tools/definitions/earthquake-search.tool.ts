@@ -149,7 +149,7 @@ export const earthquakeSearch = tool('earthquake_search', {
   errors: [
     {
       reason: 'query_too_broad',
-      code: JsonRpcErrorCode.InvalidParams,
+      code: JsonRpcErrorCode.ValidationError,
       when: 'Query matches more than 20,000 events — exceeds USGS search limit.',
       recovery:
         'Narrow the time range, raise min_magnitude, or add a location radius filter. ' +

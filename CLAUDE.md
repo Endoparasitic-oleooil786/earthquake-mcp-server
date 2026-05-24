@@ -2,8 +2,8 @@
 
 **Server:** earthquake-mcp-server
 **Package:** `@cyanheads/earthquake-mcp-server`
-**Version:** 0.1.7
-**Framework:** [@cyanheads/mcp-ts-core](https://www.npmjs.com/package/@cyanheads/mcp-ts-core) `^0.9.7`
+**Version:** 0.1.8
+**Framework:** [@cyanheads/mcp-ts-core](https://www.npmjs.com/package/@cyanheads/mcp-ts-core) `^0.9.9`
 **Engines:** Bun ≥1.3.0, Node ≥24.0.0
 **MCP SDK:** `@modelcontextprotocol/sdk` ^1.29.0
 **Zod:** ^4.4.3
@@ -34,6 +34,7 @@ Tailor suggestions to what's actually missing or stale — don't recite the full
 - **Use `ctx.state`** for tenant-scoped storage. Never access persistence directly.
 - **Check `ctx.elicit` / `ctx.sample`** for presence before calling.
 - **Secrets in env vars only** — never hardcoded.
+- **Close the loop on issues.** When implementing work tracked by a GitHub issue, comment on the issue with what landed before moving on. The comment is for future readers — state the concrete changes, not the conversation that produced them.
 
 ---
 
@@ -149,6 +150,9 @@ Handlers receive a unified `ctx` object. Key properties:
 | `ctx.sample` | Request LLM completion from the client. **Check for presence first:** `if (ctx.sample) { ... }` |
 | `ctx.signal` | `AbortSignal` for cancellation. |
 | `ctx.progress` | Task progress (present when `task: true`) — `.setTotal(n)`, `.increment()`, `.update(message)`. |
+| `ctx.fail` | Throw a typed error checked against the `errors[]` contract — `ctx.fail('reason', message, { recovery? })`. |
+| `ctx.notifyPromptListChanged` | Notify clients that the prompt list changed (call after dynamic prompt registration). |
+| `ctx.notifyToolListChanged` | Notify clients that the tool list changed (call after dynamic tool registration). |
 | `ctx.requestId` | Unique request ID. |
 | `ctx.tenantId` | Tenant ID from JWT or `'default'` for stdio. |
 
@@ -253,6 +257,7 @@ Available skills:
 | `devcheck` | Lint, format, typecheck, audit |
 | `polish-docs-meta` | Finalize docs, README, metadata, and agent protocol for shipping |
 | `maintenance` | Investigate changelogs, adopt upstream changes, and sync skills after `bun update --latest` |
+| `git-wrapup` | Version-bump, changelog, commit, and tag workflow |
 | `release-and-publish` | Ship a release: verification gate, push commits+tags, publish to npm / MCP Registry / GHCR / `.mcpb` bundle on GitHub Releases |
 | `api-auth` | Auth modes, scopes, JWT/OAuth |
 | `api-canvas` | DataCanvas: register tabular data, run SQL, export, plus the `spillover()` helper for big result sets — Tier 3 opt-in |

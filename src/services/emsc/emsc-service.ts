@@ -24,6 +24,19 @@ import type {
 /** 1 degree of latitude ≈ 111.2 km. */
 const KM_PER_DEGREE = 111.2;
 
+/** Build a request context from a handler context for use with withRetry/fetchWithTimeout. */
+function makeReqCtx(operation: string, ctx: Context) {
+  return requestContextService.createRequestContext({
+    operation,
+    parentContext: {
+      requestId: ctx.requestId,
+      traceId: ctx.traceId,
+      tenantId: ctx.tenantId,
+      timestamp: new Date().toISOString(),
+    },
+  });
+}
+
 /** Normalize an EMSC GeoJSON feature to the shared EarthquakeEvent domain type. */
 function normalizeEmscFeature(f: EmscFeature): EarthquakeEvent {
   const p = f.properties;
@@ -87,15 +100,7 @@ export class EmscService {
   }> {
     const query = this.buildFdsnQuery(params);
     const url = `${this.baseUrl}/fdsnws/event/1/query?format=json&${query}`;
-    const reqCtx = requestContextService.createRequestContext({
-      operation: 'EmscService.searchEvents',
-      parentContext: {
-        requestId: ctx.requestId,
-        traceId: ctx.traceId,
-        tenantId: ctx.tenantId,
-        timestamp: new Date().toISOString(),
-      },
-    });
+    const reqCtx = makeReqCtx('EmscService.searchEvents', ctx);
 
     return withRetry(
       async () => {
@@ -141,15 +146,7 @@ export class EmscService {
   }> {
     const query = this.buildFdsnQuery(params);
     const url = `${this.baseUrl}/fdsnws/event/1/count?format=json&${query}`;
-    const reqCtx = requestContextService.createRequestContext({
-      operation: 'EmscService.countEvents',
-      parentContext: {
-        requestId: ctx.requestId,
-        traceId: ctx.traceId,
-        tenantId: ctx.tenantId,
-        timestamp: new Date().toISOString(),
-      },
-    });
+    const reqCtx = makeReqCtx('EmscService.countEvents', ctx);
 
     return withRetry(
       async () => {

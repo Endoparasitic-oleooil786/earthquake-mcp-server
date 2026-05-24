@@ -27,6 +27,19 @@ function epochMsToIso(ms: number | null | undefined): string {
   return new Date(ms).toISOString();
 }
 
+/** Build a request context from a handler context for use with withRetry/fetchWithTimeout. */
+function makeReqCtx(operation: string, ctx: Context) {
+  return requestContextService.createRequestContext({
+    operation,
+    parentContext: {
+      requestId: ctx.requestId,
+      traceId: ctx.traceId,
+      tenantId: ctx.tenantId,
+      timestamp: new Date().toISOString(),
+    },
+  });
+}
+
 /** Normalize a USGS GeoJSON feature to the shared EarthquakeEvent domain type. */
 function normalizeUsgsFeature(f: UsgsFeature): EarthquakeEvent {
   const p = f.properties;
@@ -86,15 +99,7 @@ export class UsgsService {
     ctx: Context,
   ): Promise<{ events: EarthquakeEvent[]; generatedAt: string; count: number; feedUrl: string }> {
     const feedUrl = `${this.baseUrl}/earthquakes/feed/v1.0/summary/${magnitudeTier}_${timeWindow}.geojson`;
-    const reqCtx = requestContextService.createRequestContext({
-      operation: 'UsgsService.getFeed',
-      parentContext: {
-        requestId: ctx.requestId,
-        traceId: ctx.traceId,
-        tenantId: ctx.tenantId,
-        timestamp: new Date().toISOString(),
-      },
-    });
+    const reqCtx = makeReqCtx('UsgsService.getFeed', ctx);
 
     return withRetry(
       async () => {
@@ -148,15 +153,7 @@ export class UsgsService {
   }> {
     const query = this.buildFdsnQuery(params);
     const url = `${this.baseUrl}/fdsnws/event/1/query?format=geojson&${query}`;
-    const reqCtx = requestContextService.createRequestContext({
-      operation: 'UsgsService.searchEvents',
-      parentContext: {
-        requestId: ctx.requestId,
-        traceId: ctx.traceId,
-        tenantId: ctx.tenantId,
-        timestamp: new Date().toISOString(),
-      },
-    });
+    const reqCtx = makeReqCtx('UsgsService.searchEvents', ctx);
 
     return withRetry(
       async () => {
@@ -176,7 +173,7 @@ export class UsgsService {
                 `Query matches ${totalCount} events, exceeding the 20,000-event limit. ` +
                   'Narrow time range, raise min_magnitude, or add location filters.',
               ),
-              { code: -32602, data: { reason: 'query_too_broad', totalCount } },
+              { code: -32007, data: { reason: 'query_too_broad', totalCount } },
             );
           }
           throw await httpErrorFromResponse(response, { service: 'USGS FDSN' });
@@ -213,15 +210,7 @@ export class UsgsService {
   /** Fetch a single event by USGS event ID. */
   getEvent(eventId: string, ctx: Context): Promise<EarthquakeEvent> {
     const url = `${this.baseUrl}/fdsnws/event/1/query?eventid=${encodeURIComponent(eventId)}&format=geojson`;
-    const reqCtx = requestContextService.createRequestContext({
-      operation: 'UsgsService.getEvent',
-      parentContext: {
-        requestId: ctx.requestId,
-        traceId: ctx.traceId,
-        tenantId: ctx.tenantId,
-        timestamp: new Date().toISOString(),
-      },
-    });
+    const reqCtx = makeReqCtx('UsgsService.getEvent', ctx);
 
     return withRetry(
       async () => {
@@ -269,15 +258,7 @@ export class UsgsService {
   }> {
     const query = this.buildFdsnQuery(params);
     const url = `${this.baseUrl}/fdsnws/event/1/count?format=geojson&${query}`;
-    const reqCtx = requestContextService.createRequestContext({
-      operation: 'UsgsService.countEvents',
-      parentContext: {
-        requestId: ctx.requestId,
-        traceId: ctx.traceId,
-        tenantId: ctx.tenantId,
-        timestamp: new Date().toISOString(),
-      },
-    });
+    const reqCtx = makeReqCtx('UsgsService.countEvents', ctx);
 
     return withRetry(
       async () => {
