@@ -19,6 +19,11 @@ await createApp({
   tools: [earthquakeGetFeed, earthquakeSearch, earthquakeGetEvent, earthquakeCount],
   resources: [earthquakeFeedResource, earthquakeEventResource],
   prompts: [],
+  landing: {
+    // Public catalog server — serve full inventory to unauthenticated callers
+    // regardless of MCP_AUTH_MODE setting (0.9.13: requireAuth defaults to true for jwt/oauth)
+    requireAuth: false,
+  },
   setup(core) {
     const config = getServerConfig();
     initUsgsService(core.config, core.storage, config.usgsBaseUrl, config.requestTimeoutMs);

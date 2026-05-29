@@ -130,7 +130,7 @@ export const earthquakeCount = tool('earthquake_count', {
   errors: [
     {
       reason: 'invalid_radius',
-      code: JsonRpcErrorCode.InvalidParams,
+      code: JsonRpcErrorCode.ValidationError,
       when: 'latitude or longitude provided without radius_km, or vice versa.',
       recovery: 'Provide latitude, longitude, and radius_km together for a location-based count.',
     },
