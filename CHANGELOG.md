@@ -2,6 +2,10 @@
 
 All notable changes to this project. Each entry links to its full per-version file in [changelog/](changelog/).
 
+## [0.1.10](changelog/0.1.x/0.1.10.md) — 2026-05-30
+
+enrichment adoption — earthquake_search and earthquake_get_feed surface result totals, truncation, and empty-result guidance via a typed enrichment block
+
 ## [0.1.9](changelog/0.1.x/0.1.9.md) — 2026-05-28
 
 mcp-ts-core ^0.9.9 → ^0.9.13: HTTP 413 body cap, session-init gate, quieter client-error logs, landing auth gate; invalid_radius reclassified to ValidationError
