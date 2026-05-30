@@ -1,0 +1,174 @@
+/**
+ * @fileoverview Edge-case and validation boundary tests for the earthquake-count tool.
+ * @module tests/tools/earthquake-count-edge-cases.test
+ */
+
+import { createMockContext } from '@cyanheads/mcp-ts-core/testing';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { earthquakeCount } from '@/mcp-server/tools/definitions/earthquake-count.tool.js';
+import * as emscModule from '@/services/emsc/emsc-service.js';
+import * as usgsModule from '@/services/usgs/usgs-service.js';
+
+describe('earthquakeCount — input schema boundaries', () => {
+  it('rejects min_magnitude below -1', () => {
+    expect(() => earthquakeCount.input.parse({ min_magnitude: -2 })).toThrow();
+  });
+
+  it('rejects min_magnitude above 10', () => {
+    expect(() => earthquakeCount.input.parse({ min_magnitude: 11 })).toThrow();
+  });
+
+  it('accepts min_magnitude at boundary values -1 and 10', () => {
+    expect(earthquakeCount.input.parse({ min_magnitude: -1 }).min_magnitude).toBe(-1);
+    expect(earthquakeCount.input.parse({ min_magnitude: 10 }).min_magnitude).toBe(10);
+  });
+
+  it('rejects latitude below -90', () => {
+    expect(() => earthquakeCount.input.parse({ latitude: -91 })).toThrow();
+  });
+
+  it('rejects latitude above 90', () => {
+    expect(() => earthquakeCount.input.parse({ latitude: 91 })).toThrow();
+  });
+
+  it('rejects longitude below -180', () => {
+    expect(() => earthquakeCount.input.parse({ longitude: -181 })).toThrow();
+  });
+
+  it('rejects longitude above 180', () => {
+    expect(() => earthquakeCount.input.parse({ longitude: 181 })).toThrow();
+  });
+
+  it('rejects radius_km above 20002', () => {
+    expect(() => earthquakeCount.input.parse({ radius_km: 20003 })).toThrow();
+  });
+
+  it('rejects invalid alert_level value', () => {
+    expect(() => earthquakeCount.input.parse({ alert_level: 'blue' as never })).toThrow();
+  });
+
+  it('rejects min_felt below 1', () => {
+    expect(() => earthquakeCount.input.parse({ min_felt: 0 })).toThrow();
+  });
+
+  it('applies default source=usgs', () => {
+    expect(earthquakeCount.input.parse({}).source).toBe('usgs');
+  });
+});
+
+describe('earthquakeCount — radius validation edge cases', () => {
+  it('throws invalid_radius with only latitude', async () => {
+    const ctx = createMockContext({ errors: earthquakeCount.errors });
+    const input = earthquakeCount.input.parse({ latitude: 35.0 });
+    await expect(earthquakeCount.handler(input, ctx)).rejects.toMatchObject({
+      data: { reason: 'invalid_radius' },
+    });
+  });
+
+  it('throws invalid_radius with lat+lon but no radius_km', async () => {
+    const ctx = createMockContext({ errors: earthquakeCount.errors });
+    const input = earthquakeCount.input.parse({ latitude: 35.0, longitude: 139.0 });
+    await expect(earthquakeCount.handler(input, ctx)).rejects.toMatchObject({
+      data: { reason: 'invalid_radius' },
+    });
+  });
+});
+
+describe('earthquakeCount — EMSC exceeds-limit logic', () => {
+  let mockEmscCount: ReturnType<typeof vi.fn>;
+
+  beforeEach(() => {
+    mockEmscCount = vi.fn();
+    vi.spyOn(emscModule, 'getEmscService').mockReturnValue({
+      countEvents: mockEmscCount,
+    } as unknown as emscModule.EmscService);
+  });
+
+  it('exceeds_limit true when EMSC count is above 20000', async () => {
+    // EMSC service returns exceedsLimit: true when count > 20000
+    mockEmscCount.mockResolvedValue({ count: 21000, maxAllowed: null, exceedsLimit: true });
+
+    const ctx = createMockContext();
+    const input = earthquakeCount.input.parse({ source: 'emsc' });
+    const result = await earthquakeCount.handler(input, ctx);
+
+    expect(result.exceeds_limit).toBe(true);
+    expect(result.max_allowed).toBeNull();
+    expect(result.count).toBe(21000);
+  });
+
+  it('exceeds_limit false when EMSC count is at exactly 20000', async () => {
+    mockEmscCount.mockResolvedValue({ count: 20000, maxAllowed: null, exceedsLimit: false });
+
+    const ctx = createMockContext();
+    const input = earthquakeCount.input.parse({ source: 'emsc' });
+    const result = await earthquakeCount.handler(input, ctx);
+
+    expect(result.exceeds_limit).toBe(false);
+  });
+});
+
+describe('earthquakeCount — format', () => {
+  it('formats zero count correctly', () => {
+    const output = {
+      count: 0,
+      max_allowed: 20000,
+      source: 'usgs' as const,
+      exceeds_limit: false,
+    };
+    const blocks = earthquakeCount.format!(output);
+    const text = (blocks[0] as { text: string }).text;
+    expect(text).toContain('0');
+    expect(text).toContain('USGS');
+    expect(text).toContain('No');
+  });
+
+  it('formats EMSC with exceeds_limit true', () => {
+    const output = {
+      count: 25000,
+      max_allowed: null,
+      source: 'emsc' as const,
+      exceeds_limit: true,
+    };
+    const blocks = earthquakeCount.format!(output);
+    const text = (blocks[0] as { text: string }).text;
+    expect(text).toContain('EMSC');
+    expect(text).toContain('25000');
+    expect(text).toContain('Yes');
+  });
+
+  it('format output is a single text block', () => {
+    const output = {
+      count: 10,
+      max_allowed: 20000,
+      source: 'usgs' as const,
+      exceeds_limit: false,
+    };
+    const blocks = earthquakeCount.format!(output);
+    expect(blocks).toHaveLength(1);
+    expect(blocks[0]?.type).toBe('text');
+  });
+});
+
+describe('earthquakeCount — security', () => {
+  let mockUsgsCount: ReturnType<typeof vi.fn>;
+
+  beforeEach(() => {
+    mockUsgsCount = vi.fn();
+    vi.spyOn(usgsModule, 'getUsgsService').mockReturnValue({
+      countEvents: mockUsgsCount,
+    } as unknown as usgsModule.UsgsService);
+  });
+
+  it('propagates service error message without adding tool-layer secrets', async () => {
+    mockUsgsCount.mockRejectedValue(new Error('Upstream timeout after 30000ms'));
+
+    const ctx = createMockContext({ errors: earthquakeCount.errors });
+    const input = earthquakeCount.input.parse({ min_magnitude: 5.0 });
+    const err = await earthquakeCount.handler(input, ctx).catch((e: unknown) => e);
+
+    expect(err).toBeInstanceOf(Error);
+    expect((err as Error).message).not.toContain('API_KEY');
+    expect((err as Error).message).not.toContain('SECRET');
+  });
+});
