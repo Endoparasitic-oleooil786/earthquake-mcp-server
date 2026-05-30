@@ -126,12 +126,22 @@ export const earthquakeSearch = tool('earthquake_search', {
 
   output: z.object({
     count: z.number().describe('Number of events returned.'),
-    total_count: z
+    source: z.enum(['usgs', 'emsc']).describe('Data source used.'),
+    events: z
+      .array(EarthquakeEventSchema.describe('A single earthquake event.'))
+      .describe('Matching earthquake events.'),
+  }),
+
+  // Agent-facing context on the success path — total match count, truncation flag,
+  // and recovery guidance for empty or capped result sets. Populated via ctx.enrich(...)
+  // so it reaches both structuredContent and content[] automatically.
+  enrichment: {
+    totalCount: z
       .number()
       .optional()
       .describe(
         'Total events matching the query before the limit was applied. ' +
-          'Absent when the upstream API does not report total count.',
+          'Absent when the upstream API does not report a total count.',
       ),
     truncated: z
       .boolean()
@@ -140,11 +150,14 @@ export const earthquakeSearch = tool('earthquake_search', {
         'True when results were capped by the limit parameter and more events likely exist. ' +
           'Use earthquake_count to get the total match count.',
       ),
-    source: z.enum(['usgs', 'emsc']).describe('Data source used.'),
-    events: z
-      .array(EarthquakeEventSchema.describe('A single earthquake event.'))
-      .describe('Matching earthquake events.'),
-  }),
+    notice: z
+      .string()
+      .optional()
+      .describe(
+        'Recovery guidance when results are empty or capped — how to broaden filters or get the full count. ' +
+          'Absent when the result set is non-empty and within the limit.',
+      ),
+  },
 
   errors: [
     {
@@ -223,10 +236,24 @@ export const earthquakeSearch = tool('earthquake_search', {
 
     const truncated = result.count === limit && result.count > 0;
 
+    // Populate enrichment — totalCount and truncated flag are meta about the result set,
+    // not domain payload; they reach both structuredContent and content[] via enrichment.
+    if (result.totalCount != null) ctx.enrich({ totalCount: result.totalCount });
+    if (truncated) ctx.enrich({ truncated: true });
+
+    if (result.count === 0) {
+      ctx.enrich.notice(
+        'No events matched the query. ' +
+          'Try broadening the time range, lowering min_magnitude, or expanding the radius.',
+      );
+    } else if (truncated) {
+      ctx.enrich.notice(
+        `Results capped at the limit (${limit}). Use earthquake_count to get the total match count, then narrow filters or increase limit.`,
+      );
+    }
+
     return {
       count: result.count,
-      ...(result.totalCount != null ? { total_count: result.totalCount } : {}),
-      ...(truncated ? { truncated: true } : {}),
       source: input.source,
       events: result.events,
     };
@@ -234,27 +261,17 @@ export const earthquakeSearch = tool('earthquake_search', {
 
   format: (result) => {
     const lines: string[] = [
-      `**Source:** ${result.source.toUpperCase()} | **Count:** ${result.count}${result.total_count != null ? ` of ${result.total_count} total` : ''}`,
+      `**Source:** ${result.source.toUpperCase()} | **Count:** ${result.count}`,
       '',
     ];
 
     if (result.count === 0) {
-      lines.push(
-        '_No events matched the query. ' +
-          'Try broadening the time range, lowering min_magnitude, or expanding the radius._',
-      );
+      lines.push('_No events matched the query._');
     } else {
       for (const event of result.events) {
         lines.push(...formatEvent(event));
         lines.push('');
       }
-    }
-
-    if (result.truncated) {
-      lines.push(
-        '_Results truncated at the requested limit — additional events may exist. ' +
-          'Use `earthquake_count` to get the total match count._',
-      );
     }
 
     return [{ type: 'text', text: lines.join('\n') }];

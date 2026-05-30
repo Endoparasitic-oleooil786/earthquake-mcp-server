@@ -3,7 +3,7 @@
  * @module tests/tools/earthquake-get-feed.tool.test
  */
 
-import { createMockContext } from '@cyanheads/mcp-ts-core/testing';
+import { createMockContext, getEnrichment } from '@cyanheads/mcp-ts-core/testing';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { earthquakeGetFeed } from '@/mcp-server/tools/definitions/earthquake-get-feed.tool.js';
 import type { EarthquakeEventOutput } from '@/mcp-server/tools/schemas.js';
@@ -115,6 +115,41 @@ describe('earthquakeGetFeed', () => {
 
     expect(result.count).toBe(0);
     expect(result.events).toHaveLength(0);
+  });
+
+  it('populates notice enrichment when feed is empty', async () => {
+    mockGetFeed.mockResolvedValue({
+      events: [],
+      generatedAt: '2026-05-23T10:00:00.000Z',
+      count: 0,
+      feedUrl: 'https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/significant_hour.geojson',
+    });
+
+    const ctx = createMockContext();
+    const input = earthquakeGetFeed.input.parse({
+      magnitude_tier: 'significant',
+      time_window: 'hour',
+    });
+    await earthquakeGetFeed.handler(input, ctx);
+
+    const notice = getEnrichment(ctx).notice as string | undefined;
+    expect(notice).toBeDefined();
+    expect(notice).toContain('significant/hour');
+  });
+
+  it('does not populate notice enrichment when feed has events', async () => {
+    mockGetFeed.mockResolvedValue({
+      events: [sampleEvent],
+      generatedAt: '2026-05-23T10:00:00.000Z',
+      count: 1,
+      feedUrl: 'https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_day.geojson',
+    });
+
+    const ctx = createMockContext();
+    const input = earthquakeGetFeed.input.parse({ magnitude_tier: '2.5', time_window: 'day' });
+    await earthquakeGetFeed.handler(input, ctx);
+
+    expect(getEnrichment(ctx).notice).toBeUndefined();
   });
 
   it('propagates service errors', async () => {

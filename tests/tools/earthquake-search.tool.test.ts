@@ -3,7 +3,7 @@
  * @module tests/tools/earthquake-search.tool.test
  */
 
-import { createMockContext } from '@cyanheads/mcp-ts-core/testing';
+import { createMockContext, getEnrichment } from '@cyanheads/mcp-ts-core/testing';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { earthquakeSearch } from '@/mcp-server/tools/definitions/earthquake-search.tool.js';
 import type { EarthquakeEventOutput } from '@/mcp-server/tools/schemas.js';
@@ -124,7 +124,7 @@ describe('earthquakeSearch', () => {
     expect(result.count).toBe(0);
   });
 
-  it('includes total_count when service returns it', async () => {
+  it('populates totalCount enrichment when service returns it', async () => {
     mockUsgsSearch.mockResolvedValue({
       events: [sampleEvent],
       count: 1,
@@ -133,19 +133,76 @@ describe('earthquakeSearch', () => {
 
     const ctx = createMockContext();
     const input = earthquakeSearch.input.parse({ min_magnitude: 5.0 });
-    const result = await earthquakeSearch.handler(input, ctx);
+    await earthquakeSearch.handler(input, ctx);
 
-    expect(result.total_count).toBe(500);
+    expect(getEnrichment(ctx).totalCount).toBe(500);
   });
 
-  it('omits total_count when service does not return it', async () => {
+  it('omits totalCount enrichment when service does not return it', async () => {
     mockUsgsSearch.mockResolvedValue({ events: [], count: 0 });
 
     const ctx = createMockContext();
     const input = earthquakeSearch.input.parse({});
-    const result = await earthquakeSearch.handler(input, ctx);
+    await earthquakeSearch.handler(input, ctx);
 
-    expect(result.total_count).toBeUndefined();
+    expect(getEnrichment(ctx).totalCount).toBeUndefined();
+  });
+
+  it('sets truncated enrichment when count equals limit', async () => {
+    // Default limit is 100 from server config, so mock exactly 100 events
+    const events = Array.from({ length: 100 }, (_, i) => ({ ...sampleEvent, id: `us${i}` }));
+    mockUsgsSearch.mockResolvedValue({ events, count: 100 });
+
+    const ctx = createMockContext();
+    const input = earthquakeSearch.input.parse({ limit: 100 });
+    await earthquakeSearch.handler(input, ctx);
+
+    expect(getEnrichment(ctx).truncated).toBe(true);
+  });
+
+  it('does not set truncated enrichment when count is below limit', async () => {
+    mockUsgsSearch.mockResolvedValue({ events: [sampleEvent], count: 1 });
+
+    const ctx = createMockContext();
+    const input = earthquakeSearch.input.parse({ limit: 100 });
+    await earthquakeSearch.handler(input, ctx);
+
+    expect(getEnrichment(ctx).truncated).toBeUndefined();
+  });
+
+  it('populates notice enrichment on empty results', async () => {
+    mockUsgsSearch.mockResolvedValue({ events: [], count: 0 });
+
+    const ctx = createMockContext();
+    const input = earthquakeSearch.input.parse({ min_magnitude: 8.0 });
+    await earthquakeSearch.handler(input, ctx);
+
+    const notice = getEnrichment(ctx).notice as string | undefined;
+    expect(notice).toBeDefined();
+    expect(notice).toContain('No events');
+  });
+
+  it('populates notice enrichment when results are truncated', async () => {
+    const events = Array.from({ length: 5 }, (_, i) => ({ ...sampleEvent, id: `us${i}` }));
+    mockUsgsSearch.mockResolvedValue({ events, count: 5 });
+
+    const ctx = createMockContext();
+    const input = earthquakeSearch.input.parse({ limit: 5 });
+    await earthquakeSearch.handler(input, ctx);
+
+    const notice = getEnrichment(ctx).notice as string | undefined;
+    expect(notice).toBeDefined();
+    expect(notice).toContain('earthquake_count');
+  });
+
+  it('does not populate notice on normal non-empty result', async () => {
+    mockUsgsSearch.mockResolvedValue({ events: [sampleEvent], count: 1 });
+
+    const ctx = createMockContext();
+    const input = earthquakeSearch.input.parse({ min_magnitude: 5.0 });
+    await earthquakeSearch.handler(input, ctx);
+
+    expect(getEnrichment(ctx).notice).toBeUndefined();
   });
 
   it('propagates service errors', async () => {
@@ -171,22 +228,10 @@ describe('earthquakeSearch', () => {
     expect(text).toContain('Tokyo');
   });
 
-  it('formats empty results with suggestion message', () => {
+  it('formats empty results with no-events message', () => {
     const output = { count: 0, source: 'usgs' as const, events: [] };
     const blocks = earthquakeSearch.format!(output);
     const text = (blocks[0] as { text: string }).text;
     expect(text).toContain('No events');
-  });
-
-  it('formats total_count when present', () => {
-    const output = {
-      count: 1,
-      total_count: 500,
-      source: 'usgs' as const,
-      events: [sampleEvent],
-    };
-    const blocks = earthquakeSearch.format!(output);
-    const text = (blocks[0] as { text: string }).text;
-    expect(text).toContain('500 total');
   });
 });

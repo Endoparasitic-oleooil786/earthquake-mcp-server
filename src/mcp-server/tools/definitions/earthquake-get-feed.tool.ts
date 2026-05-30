@@ -51,6 +51,19 @@ export const earthquakeGetFeed = tool('earthquake_get_feed', {
     feed_url: z.string().describe('Source feed URL.'),
   }),
 
+  // Agent-facing context for empty-feed windows — a notice so structuredContent-only
+  // clients see recovery guidance without parsing format() text.
+  enrichment: {
+    notice: z
+      .string()
+      .optional()
+      .describe(
+        'Recovery guidance when the feed contains no events — suggests narrowing the magnitude tier, ' +
+          'widening the time window, or using earthquake_search for filtered queries. ' +
+          'Absent when the feed contains events.',
+      ),
+  },
+
   errors: [
     {
       reason: 'feed_unavailable',
@@ -73,6 +86,14 @@ export const earthquakeGetFeed = tool('earthquake_get_feed', {
       magnitude_tier: input.magnitude_tier,
       time_window: input.time_window,
     });
+
+    if (result.count === 0) {
+      ctx.enrich.notice(
+        `No events in the ${input.magnitude_tier}/${input.time_window} feed. ` +
+          'Try a wider time_window (e.g. "day" or "week"), a lower magnitude_tier (e.g. "1.0" or "all"), ' +
+          'or use earthquake_search for filtered historical queries.',
+      );
+    }
 
     return {
       count: result.count,
